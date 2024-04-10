@@ -15,15 +15,6 @@
 //    bool IsLeaf(); // 이 노드가 리프노드인지 확인하는 메서드
 //    int FindLongest();
 //};
-//
-//class BVH
-//{
-//private:
-//
-//public:
-//    BV root;
-//	BVH(pmp::SurfaceMesh mesh); // 생성자
-//};
 
 class BV
 {
