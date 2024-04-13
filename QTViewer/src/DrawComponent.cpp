@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <queue>
 #include "BVH.h"
 
 #include "pmp/io/read_obj.h"
@@ -19,6 +20,7 @@
 
 namespace MN
 {
+	BVH* bvh;
 	void DrawComponent::Init()
 	{
 		pmp::read_obj(mesh, "models/kitten.obj");
@@ -28,6 +30,7 @@ namespace MN
 		pmp::Normals::compute_face_normals(mesh);
 		pmp::Normals::compute_vertex_normals(mesh);
 
+		bvh = new BVH(&mesh);
 	}
 	void DrawComponent::DrawBezierCurve(){}
 
@@ -48,52 +51,50 @@ namespace MN
 			glEnd();
 		}
 
-		BVH bvh(mesh);
-
-		DrawAABB(bvh);
-
-
-		double p[2];
-		p[0] = 0.0;
-		p[1] = 0.0;
-		glColor3f(1, 0, 0);
-		glPointSize(10.0);
-		glBegin(GL_POINTS);
-		glVertex2f(p[0], p[1]);
-		glEnd();
-
-
+		std::queue<BV*>q;
+		q.push(bvh->root);
+		while (!q.empty()) {
+			auto curr = q.front();
+			q.pop();
+			if (curr->level == arrowNum0) {
+				DrawAABB(curr->minPt, curr->maxPt);
+			}
+			if (!curr->IsLeaf()) {
+				q.push(curr->left_);
+				q.push(curr->right_);
+			}
+		}
 	}
-	void DrawComponent::DrawAABB(BVH& bvh) {
+
+	void DrawComponent::DrawAABB(Eigen::Vector3d minPt, Eigen::Vector3d maxPt) {
 
 		glColor3f(0, 1, 0);
 		glPointSize(20.0);
 		glBegin(GL_LINE_LOOP);
-		glVertex3f(bvh.root->minPt[0], bvh.root->minPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->minPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->minPt[1], bvh.root->maxPt[2]);
-		glVertex3f(bvh.root->minPt[0], bvh.root->minPt[1], bvh.root->maxPt[2]);
+		glVertex3f(minPt[0], minPt[1], minPt[2]);
+		glVertex3f(maxPt[0], minPt[1], minPt[2]);
+		glVertex3f(maxPt[0], minPt[1], maxPt[2]);
+		glVertex3f(minPt[0], minPt[1], maxPt[2]);
 		glEnd();
 
 		glBegin(GL_LINE_LOOP);
-		glVertex3f(bvh.root->minPt[0], bvh.root->maxPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->maxPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->maxPt[1], bvh.root->maxPt[2]);
-		glVertex3f(bvh.root->minPt[0], bvh.root->maxPt[1], bvh.root->maxPt[2]);
+		glVertex3f(minPt[0], maxPt[1], minPt[2]);
+		glVertex3f(maxPt[0], maxPt[1], minPt[2]);
+		glVertex3f(maxPt[0], maxPt[1], maxPt[2]);
+		glVertex3f(minPt[0], maxPt[1], maxPt[2]);
 		glEnd();
 		glBegin(GL_LINES);
 
-		glVertex3f(bvh.root->minPt[0], bvh.root->minPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->minPt[0], bvh.root->maxPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->minPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->maxPt[1], bvh.root->minPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->minPt[1], bvh.root->maxPt[2]);
-		glVertex3f(bvh.root->maxPt[0], bvh.root->maxPt[1], bvh.root->maxPt[2]);
-		glVertex3f(bvh.root->minPt[0], bvh.root->minPt[1], bvh.root->maxPt[2]);
-		glVertex3f(bvh.root->minPt[0], bvh.root->maxPt[1], bvh.root->maxPt[2]);
+		glVertex3f(minPt[0], minPt[1], minPt[2]);
+		glVertex3f(minPt[0], maxPt[1], minPt[2]);
+		glVertex3f(maxPt[0], minPt[1], minPt[2]);
+		glVertex3f(maxPt[0], maxPt[1], minPt[2]);
+		glVertex3f(maxPt[0], minPt[1], maxPt[2]);
+		glVertex3f(maxPt[0], maxPt[1], maxPt[2]);
+		glVertex3f(minPt[0], minPt[1], maxPt[2]);
+		glVertex3f(minPt[0], maxPt[1], maxPt[2]);
 
 		glEnd();
 
 	}
-
 }

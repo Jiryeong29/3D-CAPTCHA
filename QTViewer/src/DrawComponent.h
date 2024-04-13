@@ -13,7 +13,7 @@ namespace MN
 
 		//시각화와 관련된 함수는 Draw접두를 붙인다.
 		void Draw();
-		void DrawAABB(BVH& bvh);
+		void DrawAABB(Eigen::Vector3d minPt, Eigen::Vector3d maxPt);
 
 		void DrawBezierCurve();
 
