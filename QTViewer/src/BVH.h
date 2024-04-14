@@ -14,6 +14,7 @@ public:
     void SplitBV(int longAxis, pmp::SurfaceMesh* mesh, int lv); // BV좌우 자식으로 분할하는 메서드
     bool IsLeaf(); // 이 노드가 리프노드인지 확인하는 메서드
     int FindLongest();
+	int FindLongest(pmp::SurfaceMesh* mesh);
 };
 class BVH
 {

@@ -1,4 +1,6 @@
 #include "BVH.h"
+#include <fstream>
+#include <set>
 
 
 BVH::BVH(pmp::SurfaceMesh* mesh)
@@ -32,7 +34,7 @@ BV::BV(pmp::SurfaceMesh* mesh,  std::vector<pmp::Face> faces, int lv )
     }
 
     // 각 점을 순회하여 축 중 가장 긴 축을 계산
-	int longest = FindLongest();
+	int longest = FindLongest(mesh);
 
     // 분할하는 메서드
     SplitBV(longest, mesh, lv);
@@ -55,6 +57,37 @@ int BV::FindLongest()
 
     return longAxis;
 }
+int BV::FindLongest(pmp::SurfaceMesh* mesh)
+{
+    //x:0, y:1, z:2
+    auto tpIdx = mesh->get_face_property<int>("f:tpIdx");
+
+    int longAxis = -1;
+    int minDeviation = INT_MAX;
+    for (int i = 0; i < 3; i++) {
+        std::set<int>rights, lefts;
+        double midValue = (maxPt[i] + minPt[i]) / 2.0;
+        for (auto f : faces) {
+            int count = 0;
+            for (auto v : mesh->vertices(f)) {
+                auto p = mesh->position(v);
+                if (p[i] >= midValue) count++;
+            }
+            if (count >= 2) {     // right
+                rights.insert(tpIdx[f]);
+            }
+            else {              // left
+                lefts.insert(tpIdx[f]);
+            }   
+        }
+        if (std::abs((int)rights.size() - (int)lefts.size()) < minDeviation) {
+            minDeviation = std::abs((int)rights.size() - (int)lefts.size());
+            longAxis = i;
+        }
+    }
+    return longAxis;
+}
+
 // BV좌우 자식으로 분할하는 메서드
 void BV::SplitBV(int longAxis, pmp::SurfaceMesh* mesh, int lv) {
 

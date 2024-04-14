@@ -30,6 +30,11 @@ namespace MN
 		pmp::Normals::compute_face_normals(mesh);
 		pmp::Normals::compute_vertex_normals(mesh);
 
+		std::ifstream in("kitten_tpIdx.txt");
+		auto tpIdx = mesh.add_face_property<int>("f:tpIdx");
+		for (auto f : mesh.faces())
+			in >> tpIdx[f];
+
 		bvh = new BVH(&mesh);
 	}
 	void DrawComponent::DrawBezierCurve(){}
